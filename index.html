@@ -1,10 +1,209 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <title>My GitHub Page</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Downloader</title>
+  <meta name="description" content="직접 파일 URL을 다운로드하는 간단한 도구" />
+  <style>
+    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    body { margin: 0; background: #f6f7f9; color: #111; }
+    .wrap { max-width: 880px; margin: 0 auto; padding: 20px; }
+    .card {
+      background: #fff; border-radius: 14px; padding: 18px;
+      box-shadow: 0 6px 18px rgba(0,0,0,.06);
+    }
+    h1 { font-size: 20px; margin: 0 0 8px; }
+    p { margin: 6px 0 0; line-height: 1.5; color: #333; }
+    .row { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 14px; }
+    @media (min-width: 720px) { .row { grid-template-columns: 1fr auto; } }
+    input[type="url"]{
+      width: 100%; padding: 12px 12px; font-size: 16px;
+      border: 1px solid #d7dbe2; border-radius: 10px; outline: none;
+    }
+    input[type="url"]:focus { border-color: #7aa7ff; box-shadow: 0 0 0 3px rgba(122,167,255,.25); }
+    button{
+      padding: 12px 14px; font-size: 16px; border: 0; border-radius: 10px;
+      background: #1a73e8; color: #fff; cursor: pointer; min-width: 140px;
+    }
+    button:disabled { opacity: .6; cursor: not-allowed; }
+    .meta { margin-top: 12px; font-size: 14px; color: #444; }
+    .meta code { background: #f1f3f6; padding: 2px 6px; border-radius: 6px; }
+    .status { margin-top: 12px; padding: 10px 12px; border-radius: 10px; background: #f1f3f6; }
+    .status.ok { background: #eaf7ef; color: #0b5; }
+    .status.err { background: #fdecec; color: #b00020; }
+    .small { font-size: 13px; color: #666; margin-top: 10px; }
+    .links { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
+    a.btn {
+      display: inline-block; padding: 10px 12px; border-radius: 10px;
+      background: #111; color: #fff; text-decoration: none; font-size: 14px;
+    }
+    a.btn.secondary { background: #5f6368; }
+  </style>
 </head>
 <body>
-  <h1>Hello GitHub Pages</h1>
+  <div class="wrap">
+    <div class="card">
+      <h1>파일 URL 다운로드</h1>
+      <p>직접 파일 링크(예: <code>.mp4</code>, <code>.mp3</code>, <code>.zip</code>)를 넣으면 PC/모바일에서 다운로드를 시작합니다.</p>
+      <p class="small">참고: YouTube 등 “추출이 필요한 플랫폼 URL”은 지원하지 않습니다.</p>
+
+      <div class="row">
+        <input id="urlInput" type="url" placeholder="https://example.com/video.mp4" autocomplete="off" />
+        <button id="downloadBtn">다운로드</button>
+      </div>
+
+      <div class="meta" id="meta"></div>
+      <div class="status" id="status" style="display:none;"></div>
+      <div class="links" id="links" style="display:none;"></div>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    const urlInput = $("urlInput");
+    const downloadBtn = $("downloadBtn");
+    const statusEl = $("status");
+    const metaEl = $("meta");
+    const linksEl = $("links");
+
+    function setStatus(type, msg) {
+      statusEl.style.display = "block";
+      statusEl.className = "status " + (type || "");
+      statusEl.textContent = msg;
+    }
+
+    function clearStatus() {
+      statusEl.style.display = "none";
+      statusEl.textContent = "";
+      statusEl.className = "status";
+    }
+
+    function showLinks(url) {
+      linksEl.style.display = "flex";
+      linksEl.innerHTML = "";
+
+      // 모바일/PC에서 새 탭 열기(브라우저 기본 다운로드 UI 유도)
+      const open = document.createElement("a");
+      open.className = "btn secondary";
+      open.href = url;
+      open.target = "_blank";
+      open.rel = "noopener noreferrer";
+      open.textContent = "새 탭에서 열기";
+
+      // 일부 브라우저에서 download 힌트(동일 출처나 CORS 허용 시 더 잘 작동)
+      const direct = document.createElement("a");
+      direct.className = "btn";
+      direct.href = url;
+      direct.setAttribute("download", "");
+      direct.textContent = "다운로드 시도";
+
+      linksEl.appendChild(direct);
+      linksEl.appendChild(open);
+    }
+
+    function isBlockedPlatform(host) {
+      // “플랫폼 추출”로 해석될 소지가 큰 도메인은 명시 차단
+      const blocked = [
+        "youtube.com", "www.youtube.com", "youtu.be",
+        "music.youtube.com",
+        "vimeo.com",
+        "tiktok.com",
+        "instagram.com", "www.instagram.com",
+        "x.com", "twitter.com"
+      ];
+      return blocked.includes(host);
+    }
+
+    function guessFilename(u) {
+      try {
+        const url = new URL(u);
+        const p = url.pathname.split("/").filter(Boolean);
+        let last = p[p.length - 1] || "download";
+        // 쿼리로 파일명이 올 때 대비 (filename=)
+        const qName = url.searchParams.get("filename") || url.searchParams.get("file");
+        if (qName) last = qName;
+        return decodeURIComponent(last);
+      } catch {
+        return "download";
+      }
+    }
+
+    async function tryDownloadAsBlob(url) {
+      // CORS가 허용되는 “직접 파일 URL”에 한해 blob 다운로드가 가능
+      const res = await fetch(url, { mode: "cors" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const contentType = res.headers.get("content-type") || "";
+      const contentLen = res.headers.get("content-length") || "";
+      metaEl.innerHTML = `콘텐츠 타입: <code>${contentType || "unknown"}</code>` +
+        (contentLen ? ` · 크기: <code>${contentLen} bytes</code>` : "");
+
+      const blob = await res.blob();
+      const a = document.createElement("a");
+      const objectUrl = URL.createObjectURL(blob);
+      a.href = objectUrl;
+      a.download = guessFilename(url);
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(objectUrl);
+    }
+
+    async function handleDownload() {
+      clearStatus();
+      metaEl.textContent = "";
+      linksEl.style.display = "none";
+      linksEl.innerHTML = "";
+
+      const raw = urlInput.value.trim();
+      if (!raw) {
+        setStatus("err", "URL을 입력하세요.");
+        return;
+      }
+
+      let url;
+      try {
+        url = new URL(raw);
+      } catch {
+        setStatus("err", "유효한 URL 형식이 아닙니다.");
+        return;
+      }
+
+      if (!["http:", "https:"].includes(url.protocol)) {
+        setStatus("err", "http/https URL만 지원합니다.");
+        return;
+      }
+
+      if (isBlockedPlatform(url.host)) {
+        setStatus("err", "해당 플랫폼 URL은 지원하지 않습니다. 직접 파일 URL(mp4/mp3/zip 등)만 다운로드할 수 있습니다.");
+        showLinks(raw);
+        return;
+      }
+
+      downloadBtn.disabled = true;
+      downloadBtn.textContent = "처리 중...";
+
+      try {
+        // 우선 브라우저에서 blob 다운로드 시도(CORS 허용 시 가장 UX 좋음)
+        await tryDownloadAsBlob(raw);
+        setStatus("ok", "다운로드를 시작했습니다. (브라우저 다운로드 목록을 확인하세요)");
+      } catch (e) {
+        // CORS 차단/리다이렉트 등으로 실패하면 링크 제공 방식으로 폴백
+        setStatus("err",
+          "브라우저 보안 정책(CORS) 때문에 직접 다운로드에 실패했습니다. 아래 버튼으로 새 탭에서 열어 브라우저 기본 다운로드를 사용하세요."
+        );
+        showLinks(raw);
+      } finally {
+        downloadBtn.disabled = false;
+        downloadBtn.textContent = "다운로드";
+      }
+    }
+
+    downloadBtn.addEventListener("click", handleDownload);
+    urlInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") handleDownload();
+    });
+  </script>
 </body>
 </html>
