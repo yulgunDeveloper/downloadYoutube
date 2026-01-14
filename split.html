@@ -17,6 +17,7 @@
     header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
     h1{margin:0;font-size:20px}
     .sub{margin:6px 0 0;color:var(--muted);line-height:1.5}
+
     .card{margin-top:16px;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:16px}
     .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
     .btn{border:none;cursor:pointer;border-radius:14px;padding:10px 12px;font-weight:900;transition:.15s}
@@ -26,22 +27,38 @@
     .btn.ghost:hover{border-color:#cbd5e1}
     .btn.danger{background:var(--danger);color:#fff}
     .btn.danger:hover{background:var(--dangerHover)}
-    .meta{color:var(--muted);font-size:13px;white-space:pre-wrap;margin-top:10px}
+    .btn:disabled{opacity:.6;cursor:not-allowed}
+
     input[type="file"]{display:none}
+    select{padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--text)}
 
-    select{
-      padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--text);
-    }
+    .meta{color:var(--muted);font-size:13px;white-space:pre-wrap;margin-top:10px}
 
+    /* Toolbar */
     .toolbar{
       display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;
       padding:10px;border:1px dashed #cbd5e1;background:#f8fafc;border-radius:16px;margin-top:12px;
     }
     .group{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
     .group strong{font-size:13px}
-    .mini{border:1px solid var(--line);background:#fff;color:var(--text);padding:8px 10px;border-radius:12px;cursor:pointer;font-weight:800}
+    .mini{
+      border:1px solid var(--line);background:#fff;color:var(--text);
+      padding:8px 10px;border-radius:12px;cursor:pointer;font-weight:800
+    }
     .mini:hover{border-color:#cbd5e1}
+    .mini.danger{border-color:rgba(220,38,38,.35);color:#991b1b}
+    .mini.danger:hover{background:#fef2f2}
 
+    /* Drop zone (optional, matches merge) */
+    .dz{
+      margin-top:12px;border:2px dashed #cbd5e1;background:#f8fafc;border-radius:18px;
+      padding:18px;transition:.15s ease;
+    }
+    .dz.dragover{background:#eef2ff;border-color:rgba(37,99,235,.45)}
+    .dzTitle{margin:0;font-weight:950}
+    .dzDesc{margin:6px 0 0;color:var(--muted);line-height:1.5;font-size:13px}
+
+    /* Pages grid */
     .pages{
       display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-top:12px;
     }
@@ -49,24 +66,58 @@
     @media (max-width:900px){.pages{grid-template-columns:repeat(3,minmax(0,1fr));}}
     @media (max-width:650px){.pages{grid-template-columns:repeat(2,minmax(0,1fr));}}
 
-    .pageCard{border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden;user-select:none;transition:.12s}
+    .pageCard{
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:#fff;
+      overflow:hidden;
+      transition:.12s ease;
+      position:relative;
+      user-select:none;
+    }
     .pageCard:hover{border-color:#cbd5e1;transform:translateY(-1px)}
-    .top{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:10px 10px 8px;border-bottom:1px solid var(--line)}
+    .pageCard.selected{
+      border-color: rgba(37,99,235,.55);
+      box-shadow: 0 0 0 3px rgba(37,99,235,.18);
+      transform:none;
+    }
+    .pageTop{
+      display:flex;justify-content:space-between;gap:8px;align-items:flex-start;
+      padding:10px 10px 8px;border-bottom:1px solid var(--line);
+    }
     .info{min-width:0}
-    .name{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px}
+    .name{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
     .num{font-size:13px;font-weight:950}
-    .check{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
-    .check input{width:16px;height:16px}
+    .actions{display:flex;gap:8px;align-items:center}
+    .chk{
+      display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);
+    }
+    .chk input{width:16px;height:16px}
+    .delBtn{
+      border:none;background:#f1f5f9;color:#0f172a;border-radius:12px;
+      padding:6px 9px;cursor:pointer;font-weight:900;
+    }
+    .delBtn:hover{background:#e2e8f0}
+
     .canvasWrap{padding:10px;background:#f8fafc}
     canvas{width:100%;height:auto;display:block;border-radius:10px;background:#fff}
+
+    .footerBar{
+      margin-top:16px;
+      display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+      padding-top:14px;border-top:1px solid var(--line);
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
       <div>
-        <h1>PDF 분할</h1>
-        <p class="sub">대상 PDF(첫 번째 파일)를 미리보고 선택 후 “완료”를 누르면 분할 결과를 다운로드합니다.</p>
+        <h1>PDF 분할(정리)</h1>
+        <p class="sub">
+          페이지를 선택(체크)한 뒤 “선택 삭제”로 제거하거나, 페이지별 삭제를 사용할 수 있습니다.
+          완료를 누르면 남아있는 페이지 기준으로 다운로드됩니다.
+        </p>
       </div>
       <div class="row">
         <button class="btn ghost" id="backHome">처음으로</button>
@@ -81,28 +132,41 @@
         <input id="addFilesInput" type="file" accept="application/pdf" multiple />
       </div>
 
+      <div id="dropzone" class="dz" tabindex="0" role="button" aria-label="PDF 파일 추가 드롭존">
+        <p class="dzTitle">여기에 PDF 파일을 끌어다 놓으면 작업에 추가됩니다</p>
+        <p class="dzDesc">분할 대상은 기본적으로 작업의 첫 번째 PDF입니다. (필요 시 대상 선택 UI 추가 가능)</p>
+      </div>
+
       <div class="toolbar">
         <div class="group">
           <strong>분할 방식</strong>
           <select id="mode">
-            <option value="extract">선택 페이지 추출 → 1개 PDF</option>
-            <option value="eachzip">선택 페이지를 개별 PDF → ZIP</option>
+            <option value="extract">남아있는 페이지 → 1개 PDF</option>
+            <option value="eachzip">남아있는 페이지를 개별 PDF → ZIP</option>
           </select>
         </div>
+
         <div class="group">
           <strong>선택</strong>
           <button class="mini" id="selectAll">전체 선택</button>
           <button class="mini" id="selectNone">전체 해제</button>
+          <button class="mini danger" id="deleteSelected">선택 삭제</button>
         </div>
+
         <div class="group">
           <strong>완료</strong>
-          <button class="btn primary" id="doneBtn">분할 다운로드</button>
+          <button class="btn primary" id="doneBtn">다운로드</button>
         </div>
       </div>
 
       <div id="meta" class="meta"></div>
-      <div id="pages" class="pages"></div>
       <div id="status" class="meta"></div>
+
+      <div id="pages" class="pages"></div>
+
+      <div class="footerBar">
+        <div class="meta" id="summary"></div>
+      </div>
     </section>
   </div>
 
@@ -111,7 +175,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.6.82/pdf.min.js"></script>
 
   <script>
-    // ===== Shared IndexedDB helper =====
+    // ===== IndexedDB helper =====
     const DB_NAME = "changePDF";
     const DB_VERSION = 1;
     const STORE = "jobs";
@@ -149,6 +213,7 @@
       const job = (await getJob(jobId)) || { jobId, createdAt: Date.now(), files: [] };
       const files = Array.from(fileList || []);
       for (const f of files){
+        if ((f.type && f.type !== "application/pdf") && !f.name.toLowerCase().endsWith(".pdf")) continue;
         const bytes = await f.arrayBuffer();
         job.files.push({
           id: "f_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,7),
@@ -174,13 +239,16 @@
     pdfjsLib.GlobalWorkerOptions.workerSrc =
       "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.6.82/pdf.worker.min.js";
 
+    // ===== UI helpers =====
     const $ = (s) => document.querySelector(s);
     const pagesEl = $("#pages");
     const metaEl = $("#meta");
     const statusEl = $("#status");
+    const summaryEl = $("#summary");
 
-    function setStatus(msg){ statusEl.textContent = msg || ""; }
     function setMeta(msg){ metaEl.textContent = msg || ""; }
+    function setStatus(msg){ statusEl.textContent = msg || ""; }
+    function setSummary(msg){ summaryEl.textContent = msg || ""; }
 
     function qs(name){
       const u = new URL(location.href);
@@ -189,61 +257,23 @@
     const jobId = qs("jobId");
     if (!jobId) location.href = "index.html";
 
-    let targetFile = null; // first file in job
-    let pdfJsDoc = null;
-    let checkboxes = []; // index => checkbox (pageNumber1-1)
+    // ===== State =====
+    let job = null;
+    let targetFile = null;   // first file in job
+    let pdfDoc = null;       // pdf.js doc
+    let keptPages = [];      // array of pageNumber1 that are "kept" (not deleted)
+    let selected = new Set();// selected pages (pageNumber1) for multi-delete
+    const canvasByPage = new Map(); // pageNumber1 -> canvas (optional)
 
-    function createCard(fileName, pageNumber1){
-      const card = document.createElement("div");
-      card.className = "pageCard";
-
-      const top = document.createElement("div");
-      top.className = "top";
-
-      const info = document.createElement("div");
-      info.className = "info";
-      const name = document.createElement("div");
-      name.className = "name";
-      name.textContent = fileName;
-      const num = document.createElement("div");
-      num.className = "num";
-      num.textContent = "p." + pageNumber1;
-      info.appendChild(name);
-      info.appendChild(num);
-
-      const check = document.createElement("label");
-      check.className = "check";
-      const cb = document.createElement("input");
-      cb.type = "checkbox";
-      cb.checked = true;
-      const span = document.createElement("span");
-      span.textContent = "선택";
-      check.appendChild(cb);
-      check.appendChild(span);
-
-      top.appendChild(info);
-      top.appendChild(check);
-
-      const canvasWrap = document.createElement("div");
-      canvasWrap.className = "canvasWrap";
-      const canvas = document.createElement("canvas");
-      canvasWrap.appendChild(canvas);
-
-      card.appendChild(top);
-      card.appendChild(canvasWrap);
-
-      card.addEventListener("click", (e) => {
-        if (e.target === cb) return;
-        cb.checked = !cb.checked;
-        updateMeta();
-      });
-      cb.addEventListener("change", updateMeta);
-
-      return { card, canvas, cb };
+    function baseNameFromFile(name){
+      return (name || "pdf")
+        .replace(/\.pdf$/i, "")
+        .replace(/[\\/:*?"<>|]/g, "_")
+        .trim() || "pdf";
     }
 
     async function renderThumb(pageNumber1, canvas, scale=0.35){
-      const page = await pdfJsDoc.getPage(pageNumber1);
+      const page = await pdfDoc.getPage(pageNumber1);
       const viewport = page.getViewport({ scale });
       const ctx = canvas.getContext("2d", { alpha:false });
       canvas.width = Math.floor(viewport.width);
@@ -251,68 +281,169 @@
       await page.render({ canvasContext: ctx, viewport }).promise;
     }
 
-    function updateMeta(){
-      if (!targetFile || !pdfJsDoc) return;
-      const total = pdfJsDoc.numPages;
-      const selected = checkboxes.filter(cb => cb && cb.checked).length;
-      setMeta(`jobId=${jobId} | 대상 파일: ${targetFile.name} | 페이지 ${total}개 | 선택 ${selected}개 | 모드: ${$("#mode").value}`);
+    function updateHeaderInfo(){
+      if (!targetFile || !pdfDoc){
+        setMeta(`jobId=${jobId}`);
+        setSummary("");
+        return;
+      }
+      const total = pdfDoc.numPages;
+      const kept = keptPages.length;
+      const sel = selected.size;
+
+      setMeta(`jobId=${jobId} | 대상: ${targetFile.name} | 원본 ${total}p | 남김 ${kept}p | 선택 ${sel}p | 모드: ${$("#mode").value}`);
+      setSummary(kept === 0 ? "남아있는 페이지가 없습니다. 삭제를 되돌릴 수 없으므로 새로고침/재업로드가 필요합니다." : "");
     }
 
-    async function loadAndRender(){
+    function isSelected(p1){ return selected.has(p1); }
+
+    function toggleSelect(p1, on){
+      if (on) selected.add(p1);
+      else selected.delete(p1);
+      const card = pagesEl.querySelector(`.pageCard[data-p="${p1}"]`);
+      if (card) card.classList.toggle("selected", selected.has(p1));
+      updateHeaderInfo();
+    }
+
+    function deletePages(pagesToDelete){
+      const delSet = new Set(pagesToDelete);
+      keptPages = keptPages.filter(p => !delSet.has(p));
+      // selected에서도 제거
+      for (const p of delSet) selected.delete(p);
+      renderPages(); // 재렌더 (간단/확실)
+      setStatus(`삭제 완료: ${delSet.size}페이지`);
+    }
+
+    function renderPages(){
+      pagesEl.innerHTML = "";
+      canvasByPage.clear();
+
+      // keptPages 순서대로 렌더
+      for (const p1 of keptPages){
+        const card = document.createElement("div");
+        card.className = "pageCard";
+        card.dataset.p = String(p1);
+
+        const top = document.createElement("div");
+        top.className = "pageTop";
+
+        const info = document.createElement("div");
+        info.className = "info";
+        const name = document.createElement("div");
+        name.className = "name";
+        name.textContent = targetFile.name;
+        const num = document.createElement("div");
+        num.className = "num";
+        num.textContent = "p." + p1;
+        info.appendChild(name);
+        info.appendChild(num);
+
+        const actions = document.createElement("div");
+        actions.className = "actions";
+
+        const chk = document.createElement("label");
+        chk.className = "chk";
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.checked = isSelected(p1);
+        const span = document.createElement("span");
+        span.textContent = "선택";
+        chk.appendChild(cb);
+        chk.appendChild(span);
+
+        const del = document.createElement("button");
+        del.className = "delBtn";
+        del.type = "button";
+        del.textContent = "삭제";
+        del.addEventListener("click", (e) => {
+          e.stopPropagation();
+          deletePages([p1]);
+        });
+
+        actions.appendChild(chk);
+        actions.appendChild(del);
+
+        top.appendChild(info);
+        top.appendChild(actions);
+
+        const canvasWrap = document.createElement("div");
+        canvasWrap.className = "canvasWrap";
+        const canvas = document.createElement("canvas");
+        canvasWrap.appendChild(canvas);
+
+        card.appendChild(top);
+        card.appendChild(canvasWrap);
+
+        // 카드 클릭 시 체크 토글 (smallpdf 느낌)
+        card.addEventListener("click", (e) => {
+          if (e.target === cb || e.target === del) return;
+          cb.checked = !cb.checked;
+          toggleSelect(p1, cb.checked);
+        });
+
+        cb.addEventListener("change", () => toggleSelect(p1, cb.checked));
+
+        pagesEl.appendChild(card);
+        card.classList.toggle("selected", cb.checked);
+
+        canvasByPage.set(p1, canvas);
+      }
+
+      // 썸네일 렌더 (async)
+      (async () => {
+        let i = 0;
+        for (const p1 of keptPages){
+          const canvas = canvasByPage.get(p1);
+          if (!canvas) continue;
+          await renderThumb(p1, canvas, 0.35);
+          i++;
+          if (i % 12 === 0) setStatus(`미리보기 생성 중... (${i}/${keptPages.length})`);
+        }
+        setStatus("완료. 선택 후 삭제하거나 다운로드하세요.");
+        updateHeaderInfo();
+      })();
+    }
+
+    async function loadAndInit(){
       setStatus("작업 로딩 중...");
       pagesEl.innerHTML = "";
-      checkboxes = [];
-      targetFile = null;
-      pdfJsDoc = null;
+      selected.clear();
 
-      const job = await getJob(jobId);
+      job = await getJob(jobId);
       if (!job || !job.files || job.files.length === 0){
-        setStatus("파일이 없습니다. 처음 페이지로 돌아가 파일을 추가하세요.");
+        setStatus("파일이 없습니다. 처음으로 돌아가 파일을 추가하세요.");
         setMeta(`jobId=${jobId}`);
         return;
       }
 
-      // Use first file as split target
-      targetFile = job.files[0];
-      pdfJsDoc = await pdfjsLib.getDocument({ data: targetFile.bytes }).promise;
+      targetFile = job.files[0]; // first pdf as target
+      pdfDoc = await pdfjsLib.getDocument({ data: targetFile.bytes }).promise;
 
+      keptPages = Array.from({ length: pdfDoc.numPages }, (_, i) => i + 1);
+
+      updateHeaderInfo();
       setStatus("페이지 미리보기 생성 중...");
-      for (let p=1; p<=pdfJsDoc.numPages; p++){
-        const { card, canvas, cb } = createCard(targetFile.name, p);
-        pagesEl.appendChild(card);
-        checkboxes[p-1] = cb;
-
-        await renderThumb(p, canvas, 0.35);
-        if (p % 12 === 0) setStatus(`페이지 미리보기 생성 중... (${p}/${pdfJsDoc.numPages})`);
-      }
-
-      updateMeta();
-      setStatus("완료. 페이지 선택 후 분할 다운로드를 누르세요.");
+      renderPages();
     }
 
-    async function splitAndDownload(){
+    async function downloadResult(){
       if (!targetFile) { setStatus("대상 파일이 없습니다."); return; }
-      const pagesSelected = [];
-      for (let i=0; i<checkboxes.length; i++){
-        if (checkboxes[i] && checkboxes[i].checked) pagesSelected.push(i+1); // 1-based
-      }
-      if (pagesSelected.length === 0){ setStatus("선택된 페이지가 없습니다."); return; }
+      if (keptPages.length === 0){ setStatus("남아있는 페이지가 없습니다."); return; }
 
       const mode = $("#mode").value;
-      const baseName = (targetFile.name || "pdf").replace(/\.pdf$/i, "").replace(/[\\/:*?"<>|]/g, "_").trim() || "pdf";
-
+      const base = baseNameFromFile(targetFile.name);
       const srcPdf = await PDFLib.PDFDocument.load(targetFile.bytes);
 
       if (mode === "extract"){
-        setStatus("추출 PDF 생성 중...");
+        setStatus("PDF 생성 중...");
         const outPdf = await PDFLib.PDFDocument.create();
-        const indices0 = pagesSelected.map(p => p-1);
+        const indices0 = keptPages.map(p => p - 1);
         const copied = await outPdf.copyPages(srcPdf, indices0);
         copied.forEach(pg => outPdf.addPage(pg));
         const outBytes = await outPdf.save();
-        const blob = new Blob([outBytes], { type:"application/pdf" });
 
-        const filename = `${baseName}_extract_${new Date().toISOString().slice(0,10)}.pdf`;
+        const blob = new Blob([outBytes], { type:"application/pdf" });
+        const filename = `${base}_kept_${new Date().toISOString().slice(0,10)}.pdf`;
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url; a.download = filename;
@@ -325,57 +456,72 @@
       if (mode === "eachzip"){
         setStatus("개별 PDF 생성 중...");
         const zip = new JSZip();
-        for (let i=0; i<pagesSelected.length; i++){
-          const p1 = pagesSelected[i];
+
+        for (let i=0; i<keptPages.length; i++){
+          const p1 = keptPages[i];
           const outPdf = await PDFLib.PDFDocument.create();
-          const [copied] = await outPdf.copyPages(srcPdf, [p1-1]);
+          const [copied] = await outPdf.copyPages(srcPdf, [p1 - 1]);
           outPdf.addPage(copied);
           const outBytes = await outPdf.save();
-          zip.file(`${baseName}_p${String(p1).padStart(3,"0")}.pdf`, outBytes);
-          if ((i+1) % 20 === 0) setStatus(`개별 PDF 생성 중... (${i+1}/${pagesSelected.length})`);
+          zip.file(`${base}_p${String(p1).padStart(3,"0")}.pdf`, outBytes);
+
+          if ((i+1) % 20 === 0) setStatus(`개별 PDF 생성 중... (${i+1}/${keptPages.length})`);
         }
+
         setStatus("ZIP 생성 중...");
         const zipBlob = await zip.generateAsync({ type:"blob" });
-        const zipName = `${baseName}_split_${new Date().toISOString().slice(0,10)}.zip`;
+        const filename = `${base}_split_${new Date().toISOString().slice(0,10)}.zip`;
         const url = URL.createObjectURL(zipBlob);
         const a = document.createElement("a");
-        a.href = url; a.download = zipName;
+        a.href = url; a.download = filename;
         document.body.appendChild(a); a.click(); a.remove();
         URL.revokeObjectURL(url);
-        setStatus(`완료: ${zipName}`);
+
+        setStatus(`완료: ${filename}`);
         return;
       }
     }
 
-    // Events
+    // ===== UI Events =====
     $("#backHome").addEventListener("click", () => location.href = "index.html");
-    $("#reloadBtn").addEventListener("click", loadAndRender);
-    $("#mode").addEventListener("change", updateMeta);
+    $("#reloadBtn").addEventListener("click", loadAndInit);
+    $("#mode").addEventListener("change", updateHeaderInfo);
 
-    $("#addFilesBtn").addEventListener("click", () => $("#addFilesInput").click());
-    $("#addFilesInput").addEventListener("change", async () => {
-      if (!$("#addFilesInput").files || $("#addFilesInput").files.length === 0) return;
-      setStatus("파일 추가 저장 중...");
-      await addFilesToJob(jobId, $("#addFilesInput").files);
-      $("#addFilesInput").value = "";
-      await loadAndRender();
+    $("#selectAll").addEventListener("click", () => {
+      selected = new Set(keptPages);
+      // UI 반영
+      for (const p1 of keptPages){
+        const cb = pagesEl.querySelector(`.pageCard[data-p="${p1}"] input[type="checkbox"]`);
+        if (cb) cb.checked = true;
+        const card = pagesEl.querySelector(`.pageCard[data-p="${p1}"]`);
+        if (card) card.classList.add("selected");
+      }
+      updateHeaderInfo();
     });
 
-    $("#clearJobBtn").addEventListener("click", async () => {
-      await clearJob(jobId);
-      pagesEl.innerHTML = "";
-      checkboxes = [];
-      setMeta(`jobId=${jobId} | 비어있음`);
-      setStatus("이 작업(jobId)을 비웠습니다. 처음으로 돌아가 파일을 추가하세요.");
+    $("#selectNone").addEventListener("click", () => {
+      selected.clear();
+      for (const p1 of keptPages){
+        const cb = pagesEl.querySelector(`.pageCard[data-p="${p1}"] input[type="checkbox"]`);
+        if (cb) cb.checked = false;
+        const card = pagesEl.querySelector(`.pageCard[data-p="${p1}"]`);
+        if (card) card.classList.remove("selected");
+      }
+      updateHeaderInfo();
     });
 
-    $("#selectAll").addEventListener("click", () => { checkboxes.forEach(cb => cb && (cb.checked=true)); updateMeta(); });
-    $("#selectNone").addEventListener("click", () => { checkboxes.forEach(cb => cb && (cb.checked=false)); updateMeta(); });
+    $("#deleteSelected").addEventListener("click", () => {
+      if (selected.size === 0){
+        setStatus("선택된 페이지가 없습니다.");
+        return;
+      }
+      deletePages(Array.from(selected));
+    });
 
     $("#doneBtn").addEventListener("click", async () => {
       $("#doneBtn").disabled = true;
       try{
-        await splitAndDownload();
+        await downloadResult();
       } catch(e){
         console.error(e);
         setStatus("오류: " + (e.message || e));
@@ -384,8 +530,50 @@
       }
     });
 
+    // Add files (job에 추가 — split 대상은 여전히 첫 번째)
+    $("#addFilesBtn").addEventListener("click", () => $("#addFilesInput").click());
+    $("#addFilesInput").addEventListener("change", async () => {
+      if (!$("#addFilesInput").files || $("#addFilesInput").files.length === 0) return;
+      setStatus("파일 추가 저장 중...");
+      await addFilesToJob(jobId, $("#addFilesInput").files);
+      $("#addFilesInput").value = "";
+      // split은 첫 파일이 대상이므로, 첫 파일이 바뀌지 않는 한 화면은 동일.
+      // 다만 사용자가 추가한 파일을 첫 대상으로 쓰고 싶을 수 있으니 새로 로드.
+      await loadAndInit();
+      setStatus("파일을 추가했습니다. (대상은 첫 번째 파일)");
+    });
+
+    // Dropzone add
+    const dz = $("#dropzone");
+    dz.addEventListener("dragover", (e) => { e.preventDefault(); dz.classList.add("dragover"); });
+    dz.addEventListener("dragleave", () => dz.classList.remove("dragover"));
+    dz.addEventListener("drop", async (e) => {
+      e.preventDefault();
+      dz.classList.remove("dragover");
+      const files = e.dataTransfer.files;
+      if (!files || files.length === 0) return;
+      setStatus("파일 추가 저장 중...");
+      await addFilesToJob(jobId, files);
+      await loadAndInit();
+      setStatus("파일을 추가했습니다. (대상은 첫 번째 파일)");
+    });
+    dz.addEventListener("click", () => $("#addFilesInput").click());
+    dz.addEventListener("keydown", (e) => { if (e.key==="Enter" || e.key===" ") $("#addFilesInput").click(); });
+
+    $("#clearJobBtn").addEventListener("click", async () => {
+      await clearJob(jobId);
+      setStatus("이 작업(jobId)을 비웠습니다. 처음으로 돌아가 파일을 추가하세요.");
+      pagesEl.innerHTML = "";
+      selected.clear();
+      keptPages = [];
+      targetFile = null;
+      pdfDoc = null;
+      setMeta(`jobId=${jobId} | 비어있음`);
+      setSummary("");
+    });
+
     // init
-    loadAndRender();
+    loadAndInit();
   </script>
 </body>
 </html>
