@@ -16,215 +16,110 @@
     header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
     h1{margin:0;font-size:22px;letter-spacing:-.2px}
     .sub{margin:6px 0 0;color:var(--muted);line-height:1.5}
+
     .card{margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px}
-    .dz{
-      border:2px dashed #cbd5e1;border-radius:18px;background:#f8fafc;
-      padding:26px; text-align:center; transition:.15s ease;
-    }
-    .dz.dragover{background:#eef2ff;border-color:rgba(37,99,235,.45)}
-    .dzTitle{font-weight:900;font-size:18px;margin:0 0 6px}
-    .dzDesc{margin:0;color:var(--muted);line-height:1.5}
-    .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:14px}
-    .btn{
-      border:none;cursor:pointer;border-radius:14px;padding:12px 14px;font-weight:900;
-      background:var(--primary);color:#fff;transition:.15s ease;
-    }
-    .btn:hover{background:var(--primaryHover)}
-    .btn.ghost{background:#fff;border:1px solid var(--line);color:var(--text)}
-    .btn.ghost:hover{border-color:#cbd5e1}
-    input[type="file"]{display:none}
-    .meta{margin-top:12px;color:var(--muted);font-size:13px;white-space:pre-wrap;text-align:center}
-    .toolRow{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+
+    .toolRow{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:10px 0;}
+
     .toolCard{
-      width:min(320px, 100%);
-      border:1px solid var(--line);border-radius:16px;padding:14px;background:#fff;cursor:pointer;
+      width:min(420px, 100%);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:18px;
+      padding-bottom:66px;           /* 버튼 공간 확보 */
+      background:#fff;
+      cursor:pointer;
       transition:.15s ease;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      position:relative;            /* 버튼 absolute 기준 */
+      min-height: 170px;            /* 내용이 적어도 균형 유지 */
     }
     .toolCard:hover{transform:translateY(-1px);border-color:#cbd5e1}
-    .toolTitle{margin:0;font-size:16px;font-weight:950}
-    .toolDesc{margin:6px 0 0;color:var(--muted);font-size:13px;line-height:1.45}
-    .disabled{opacity:.6;pointer-events:none}
+
+    .toolTitle{margin:0;font-size:18px;font-weight:950}
+    .toolDesc{margin:0;color:var(--muted);font-size:13px;line-height:1.45;max-width: 34ch}
+
+    .cta{
+      position:absolute;
+      right:16px;
+      bottom:16px;
+      border:none;
+      cursor:pointer;
+      border-radius:14px;
+      padding:12px 14px;
+      font-weight:900;
+      background:var(--primary);
+      color:#fff;
+      transition:.15s ease;
+      white-space:nowrap;
+    }
+    .cta:hover{background:var(--primaryHover)}
+
+    .hint{
+      margin-top:12px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.5;
+      text-align:center;
+      white-space:pre-wrap;
+    }
+
+    /* 작은 화면에서 버튼이 너무 꽉 차면 살짝 작게 */
+    @media (max-width: 420px){
+      .toolCard{ padding-bottom:62px; }
+      .cta{ padding:11px 12px; right:14px; bottom:14px; }
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
       <div>
-        <h1>ChangePDF</h1>
-        <p class="sub">파일을 끌어다 놓고, 다음 페이지에서 미리보기를 보면서 병합/분할하세요. (IndexedDB에 임시 저장)</p>
+        <h1>PDF 병합 / 분할</h1>
+        <p class="sub">작업을 선택한 뒤, 다음 화면에서 파일을 추가하고 미리보기를 보면서 편집하세요.</p>
       </div>
     </header>
 
     <section class="card">
-      <div id="dropzone" class="dz" role="button" tabindex="0">
-        <p class="dzTitle">PDF 파일을 끌어와서 놓으세요</p>
-        <p class="dzDesc">또는 버튼으로 파일을 선택하세요. 업로드 후 병합/분할 페이지로 이동합니다.</p>
-        <div class="row">
-          <button id="pickBtn" class="btn">파일 선택</button>
-          <button id="clearBtn" class="btn ghost">초기화</button>
-        </div>
-        <input id="fileInput" type="file" accept="application/pdf" multiple />
-        <div id="status" class="meta"></div>
-      </div>
-
-      <div class="toolRow" style="margin-top:18px;">
-        <div id="goMerge" class="toolCard disabled" role="button" tabindex="0">
+      <div class="toolRow">
+        <div id="goMerge" class="toolCard" role="button" tabindex="0" aria-label="PDF 병합으로 이동">
           <p class="toolTitle">PDF 병합</p>
-          <p class="toolDesc">여러 파일을 합치고, 페이지 순서 변경/삭제 후 결과를 다운로드합니다.</p>
+          <p class="toolDesc">파일을 여러 개 추가하고 순서를 조정한 뒤 하나의 PDF로 다운로드합니다.</p>
+          <button class="cta" type="button">병합 시작</button>
         </div>
-        <div id="goSplit" class="toolCard disabled" role="button" tabindex="0">
+
+        <div id="goSplit" class="toolCard" role="button" tabindex="0" aria-label="PDF 분할로 이동">
           <p class="toolTitle">PDF 분할</p>
-          <p class="toolDesc">한 파일을 페이지 단위로 추출하거나 개별 PDF/ZIP으로 분할합니다.</p>
+          <p class="toolDesc">페이지를 선택/삭제하며 정리한 뒤, PDF 또는 ZIP으로 다운로드합니다.</p>
+          <button class="cta" type="button">분할 시작</button>
         </div>
       </div>
     </section>
   </div>
 
   <script>
-    // ========= IndexedDB helper (shared) =========
-    const DB_NAME = "changePDF";
-    const DB_VERSION = 1;
-    const STORE = "jobs"; // key: jobId, value: { jobId, createdAt, files:[{id,name,type,bytes}] }
-
-    function openDB(){
-      return new Promise((resolve, reject) => {
-        const req = indexedDB.open(DB_NAME, DB_VERSION);
-        req.onupgradeneeded = () => {
-          const db = req.result;
-          if (!db.objectStoreNames.contains(STORE)) {
-            db.createObjectStore(STORE, { keyPath: "jobId" });
-          }
-        };
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = () => reject(req.error);
-      });
-    }
-
-    async function putJob(job){
-      const db = await openDB();
-      return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE, "readwrite");
-        tx.objectStore(STORE).put(job);
-        tx.oncomplete = () => { db.close(); resolve(); };
-        tx.onerror = () => { db.close(); reject(tx.error); };
-      });
-    }
-
-    async function getJob(jobId){
-      const db = await openDB();
-      return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE, "readonly");
-        const req = tx.objectStore(STORE).get(jobId);
-        req.onsuccess = () => { db.close(); resolve(req.result || null); };
-        req.onerror = () => { db.close(); reject(req.error); };
-      });
-    }
-
     function newJobId(){
       return "job_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 9);
     }
-
-    async function createOrLoadJob(jobId){
-      let job = await getJob(jobId);
-      if (!job){
-        job = { jobId, createdAt: Date.now(), files: [] };
-        await putJob(job);
-      }
-      return job;
+    function go(page){
+      const jobId = newJobId();
+      location.href = `${page}?jobId=${encodeURIComponent(jobId)}`;
     }
 
-    async function addFilesToJob(jobId, fileList){
-      const job = await createOrLoadJob(jobId);
-      const files = Array.from(fileList || []);
-      for (const f of files){
-        const bytes = await f.arrayBuffer();
-        job.files.push({
-          id: "f_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,7),
-          name: f.name,
-          type: f.type || "application/pdf",
-          bytes
-        });
-      }
-      await putJob(job);
-      return job;
-    }
-
-    async function clearJob(jobId){
-      const db = await openDB();
-      return new Promise((resolve, reject) => {
-        const tx = db.transaction(STORE, "readwrite");
-        tx.objectStore(STORE).delete(jobId);
-        tx.oncomplete = () => { db.close(); resolve(); };
-        tx.onerror = () => { db.close(); reject(tx.error); };
-      });
-    }
-
-    // ========= UI logic =========
-    const dz = document.getElementById("dropzone");
-    const fileInput = document.getElementById("fileInput");
-    const pickBtn = document.getElementById("pickBtn");
-    const clearBtn = document.getElementById("clearBtn");
-    const status = document.getElementById("status");
     const goMerge = document.getElementById("goMerge");
     const goSplit = document.getElementById("goSplit");
 
-    let currentJobId = newJobId();
-    let fileCount = 0;
+    goMerge.addEventListener("click", () => go("merge.html"));
+    goSplit.addEventListener("click", () => go("split.html"));
 
-    function setStatus(msg){ status.textContent = msg || ""; }
-    function setEnabled(el, enabled){
-      el.classList.toggle("disabled", !enabled);
-    }
-    function refresh(){
-      const ok = fileCount > 0;
-      setEnabled(goMerge, ok);
-      setEnabled(goSplit, ok);
-      setStatus(ok ? `준비됨: ${fileCount}개 파일 (jobId=${currentJobId})` : "파일을 추가하세요.");
-    }
+    goMerge.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") go("merge.html"); });
+    goSplit.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") go("split.html"); });
 
-    async function handleFiles(files){
-      if (!files || files.length === 0) return;
-      setStatus("파일 저장 중(IndexedDB)...");
-      const job = await addFilesToJob(currentJobId, files);
-      fileCount = job.files.length;
-      refresh();
-    }
-
-    dz.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      dz.classList.add("dragover");
-    });
-    dz.addEventListener("dragleave", () => dz.classList.remove("dragover"));
-    dz.addEventListener("drop", async (e) => {
-      e.preventDefault();
-      dz.classList.remove("dragover");
-      await handleFiles(e.dataTransfer.files);
-    });
-    dz.addEventListener("click", () => fileInput.click());
-    dz.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") fileInput.click(); });
-
-    pickBtn.addEventListener("click", (e) => { e.stopPropagation(); fileInput.click(); });
-    fileInput.addEventListener("change", async () => {
-      await handleFiles(fileInput.files);
-      fileInput.value = "";
-    });
-
-    clearBtn.addEventListener("click", async (e) => {
-      e.stopPropagation();
-      await clearJob(currentJobId);
-      currentJobId = newJobId();
-      fileCount = 0;
-      refresh();
-    });
-
-    function go(page){
-      // jobId 전달
-      location.href = `${page}?jobId=${encodeURIComponent(currentJobId)}`;
-    }
-    goMerge.addEventListener("click", () => { if (fileCount>0) go("merge.html"); });
-    goSplit.addEventListener("click", () => { if (fileCount>0) go("split.html"); });
-
-    refresh();
+    // 카드 내부 버튼 클릭 시 카드 클릭과 동일 동작
+    goMerge.querySelector(".cta").addEventListener("click", (e) => { e.stopPropagation(); go("merge.html"); });
+    goSplit.querySelector(".cta").addEventListener("click", (e) => { e.stopPropagation(); go("split.html"); });
   </script>
 </body>
 </html>
