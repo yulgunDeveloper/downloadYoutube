@@ -3,24 +3,24 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ChangePDF - 병합</title>
+  <title>ChangePDF - 병합(정리)</title>
   <style>
     :root{
       --bg:#fff; --text:#0f172a; --muted:#64748b; --line:#e5e7eb;
       --primary:#2563eb; --primaryHover:#1d4ed8;
       --danger:#dc2626; --dangerHover:#b91c1c;
       --shadow:0 16px 32px rgba(15,23,42,.08);
-      --card:#fff;
     }
     *{box-sizing:border-box}
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans KR",sans-serif;background:var(--bg);color:var(--text)}
-    .wrap{max-width:1100px;margin:0 auto;padding:26px 16px 80px}
+    .wrap{max-width:1150px;margin:0 auto;padding:26px 16px 80px}
     header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
     h1{margin:0;font-size:20px}
     .sub{margin:6px 0 0;color:var(--muted);line-height:1.5}
 
-    .card{margin-top:16px;background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:16px}
+    .card{margin-top:16px;background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:16px}
     .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
     .btn{border:none;cursor:pointer;border-radius:14px;padding:10px 12px;font-weight:900;transition:.15s}
     .btn.primary{background:var(--primary);color:#fff}
     .btn.primary:hover{background:var(--primaryHover)}
@@ -33,113 +33,91 @@
     input[type="file"]{display:none}
     .meta{color:var(--muted);font-size:13px;white-space:pre-wrap;margin-top:10px}
 
+    .toolbar{
+      display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;
+      padding:10px;border:1px dashed #cbd5e1;background:#f8fafc;border-radius:16px;margin-top:12px;
+    }
+    .group{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .group strong{font-size:13px}
+    .mini{
+      border:1px solid var(--line);background:#fff;color:var(--text);
+      padding:8px 10px;border-radius:12px;cursor:pointer;font-weight:800
+    }
+    .mini:hover{border-color:#cbd5e1}
+    .mini.danger{border-color:rgba(220,38,38,.35);color:#991b1b}
+    .mini.danger:hover{background:#fef2f2}
+
     /* Drop zone */
     .dz{
-      margin-top:12px;
-      border:2px dashed #cbd5e1;
-      background:#f8fafc;
-      border-radius:18px;
-      padding:18px;
-      transition:.15s ease;
+      margin-top:12px;border:2px dashed #cbd5e1;background:#f8fafc;border-radius:18px;
+      padding:18px;transition:.15s ease;
     }
     .dz.dragover{background:#eef2ff;border-color:rgba(37,99,235,.45)}
     .dzTitle{margin:0;font-weight:950}
     .dzDesc{margin:6px 0 0;color:var(--muted);line-height:1.5;font-size:13px}
 
-    /* File list */
-    .fileGrid{
-      margin-top:14px;
-      display:grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap:12px;
+    /* Pages grid */
+    .pages{
+      display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-top:12px;
     }
-    @media (max-width: 980px){ .fileGrid{ grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-    @media (max-width: 720px){ .fileGrid{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width:1100px){.pages{grid-template-columns:repeat(4,minmax(0,1fr));}}
+    @media (max-width:900px){.pages{grid-template-columns:repeat(3,minmax(0,1fr));}}
+    @media (max-width:650px){.pages{grid-template-columns:repeat(2,minmax(0,1fr));}}
 
-    .fileCard{
+    .pageCard{
       border:1px solid var(--line);
       border-radius:16px;
       background:#fff;
-      padding:12px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      user-select:none;
+      overflow:hidden;
       transition:.12s ease;
       position:relative;
+      user-select:none;
     }
-    .fileCard:hover{border-color:#cbd5e1; transform: translateY(-1px);}
-    .fileCard[draggable="true"]{cursor:grab}
-    .fileCard.dragging{
+    .pageCard:hover{border-color:#cbd5e1;transform:translateY(-1px)}
+    .pageCard.selected{
+      border-color: rgba(37,99,235,.55);
+      box-shadow: 0 0 0 3px rgba(37,99,235,.18);
+      transform:none;
+    }
+
+    .pageCard[draggable="true"]{cursor:grab}
+    .pageCard.dragging{
       opacity:.6;
       cursor:grabbing;
       outline:2px dashed rgba(37,99,235,.45);
       outline-offset:2px;
       transform:none;
     }
-    .fileCard.dropTarget{
+    .pageCard.dropTarget{
       outline:2px solid rgba(37,99,235,.35);
       outline-offset:2px;
     }
-    .fileTop{
-      display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
-    }
-    .fileName{
-      font-weight:950;
-      font-size:13px;
-      line-height:1.25;
-      word-break:break-word;
-    }
-    .fileSub{
-      color:var(--muted);
-      font-size:12px;
-    }
-    .xBtn{
-      border:none;
-      background:#f1f5f9;
-      color:#0f172a;
-      border-radius:12px;
-      padding:6px 9px;
-      cursor:pointer;
-      font-weight:900;
-    }
-    .xBtn:hover{background:#e2e8f0}
 
-    /* Add tile */
-    .addTile{
-      border:2px dashed #cbd5e1;
-      background:#f8fafc;
-      border-radius:16px;
-      padding:12px;
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      align-items:center;
-      gap:6px;
-      cursor:pointer;
-      transition:.12s ease;
-      min-height: 104px;
+    .pageTop{
+      display:flex;justify-content:space-between;gap:8px;align-items:flex-start;
+      padding:10px 10px 8px;border-bottom:1px solid var(--line);
     }
-    .addTile:hover{background:#eef2ff; border-color:rgba(37,99,235,.45)}
-    .addPlus{
-      width:34px;height:34px;border-radius:12px;
-      background:var(--primary); color:#fff;
-      display:flex;align-items:center;justify-content:center;
-      font-weight:950;
-      font-size:18px;
+    .info{min-width:0}
+    .name{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+    .num{font-size:13px;font-weight:950}
+    .actions{display:flex;gap:8px;align-items:center}
+    .chk{
+      display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);
     }
-    .addText{font-weight:950; font-size:13px;}
-    .addHint{color:var(--muted); font-size:12px; text-align:center; line-height:1.35;}
+    .chk input{width:16px;height:16px}
+    .delBtn{
+      border:none;background:#f1f5f9;color:#0f172a;border-radius:12px;
+      padding:6px 9px;cursor:pointer;font-weight:900;
+    }
+    .delBtn:hover{background:#e2e8f0}
+
+    .canvasWrap{padding:10px;background:#f8fafc}
+    canvas{width:100%;height:auto;display:block;border-radius:10px;background:#fff}
 
     .footerBar{
       margin-top:16px;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:12px;
-      flex-wrap:wrap;
-      padding-top:14px;
-      border-top:1px solid var(--line);
+      display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+      padding-top:14px;border-top:1px solid var(--line);
     }
   </style>
 </head>
@@ -147,9 +125,9 @@
   <div class="wrap">
     <header>
       <div>
-        <h1>PDF 병합</h1>
+        <h1>PDF 병합(정리)</h1>
         <p class="sub">
-          파일을 추가하고(드래그&드롭 가능) 카드 순서를 드래그로 정렬한 후 “병합 다운로드”를 누르세요.
+          파일을 추가한 뒤 페이지를 드래그로 정렬하고(필요 시 삭제) “병합 다운로드”를 누르세요.
         </p>
       </div>
       <div class="row">
@@ -159,35 +137,44 @@
 
     <section class="card">
       <div class="row">
-        <button class="btn primary" id="pickBtn">파일 추가</button>
-        <button class="btn ghost" id="reloadBtn">목록 새로고침</button>
+        <button class="btn primary" id="addFilesBtn">파일 추가</button>
+        <button class="btn ghost" id="reloadBtn">미리보기 새로고침</button>
         <button class="btn danger" id="clearJobBtn">이 작업 비우기</button>
-        <input id="fileInput" type="file" accept="application/pdf" multiple />
+        <input id="addFilesInput" type="file" accept="application/pdf" multiple />
       </div>
 
       <div id="dropzone" class="dz" tabindex="0" role="button" aria-label="PDF 파일 추가 드롭존">
         <p class="dzTitle">여기에 PDF 파일을 끌어다 놓으면 추가됩니다</p>
-        <p class="dzDesc">또는 “파일 추가” 버튼을 사용하세요. (여러 개 선택 가능)</p>
+        <p class="dzDesc">추가된 파일의 모든 페이지가 아래에 표시됩니다. 페이지 순서는 드래그로 변경하세요.</p>
+      </div>
+
+      <div class="toolbar">
+        <div class="group">
+          <button class="mini" id="selectAll">전체 선택</button>
+          <button class="mini" id="selectNone">전체 해제</button>
+          <button class="mini danger" id="deleteSelected">선택 삭제</button>
+        </div>
+        <div class="group">
+          <button class="btn primary" id="mergeBtn">병합 다운로드</button>
+        </div>
       </div>
 
       <div id="meta" class="meta"></div>
       <div id="status" class="meta"></div>
 
-      <div id="fileGrid" class="fileGrid"></div>
+      <div id="pages" class="pages"></div>
 
       <div class="footerBar">
         <div class="meta" id="summary"></div>
-        <div class="row">
-          <button class="btn primary" id="mergeBtn">병합 다운로드</button>
-        </div>
       </div>
     </section>
   </div>
 
   <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script src="https://unpkg.com/pdfjs-dist@3.11.174/legacy/build/pdf.min.js"></script>
 
   <script>
-    // ===== IndexedDB helper (same contract as index.html) =====
+    // ===== IndexedDB helper =====
     const DB_NAME = "changePDF";
     const DB_VERSION = 1;
     const STORE = "jobs";
@@ -221,8 +208,16 @@
         tx.onerror = () => { db.close(); reject(tx.error); };
       });
     }
+    async function ensureJob(jobId){
+      let job = await getJob(jobId);
+      if (!job){
+        job = { jobId, createdAt: Date.now(), files: [] };
+        await putJob(job);
+      }
+      return job;
+    }
     async function addFilesToJob(jobId, fileList){
-      const job = (await getJob(jobId)) || { jobId, createdAt: Date.now(), files: [] };
+      const job = await ensureJob(jobId);
       const files = Array.from(fileList || []);
       for (const f of files){
         if ((f.type && f.type !== "application/pdf") && !f.name.toLowerCase().endsWith(".pdf")) continue;
@@ -247,13 +242,17 @@
       });
     }
 
-    // ===== Utils =====
+    // ===== PDF.js worker =====
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://unpkg.com/pdfjs-dist@3.11.174/legacy/build/pdf.worker.min.js";
+
+
+    // ===== UI helpers =====
     const $ = (s) => document.querySelector(s);
+    const pagesEl = $("#pages");
     const metaEl = $("#meta");
     const statusEl = $("#status");
     const summaryEl = $("#summary");
-    const fileGrid = $("#fileGrid");
-    const mergeBtn = $("#mergeBtn");
 
     function setMeta(msg){ metaEl.textContent = msg || ""; }
     function setStatus(msg){ statusEl.textContent = msg || ""; }
@@ -266,91 +265,132 @@
     const jobId = qs("jobId");
     if (!jobId) location.href = "index.html";
 
+    // ===== State =====
     let job = null;
+    let jobFiles = [];            // [{id,name,bytes}]
+    let pdfDocs = [];             // pdf.js docs aligned to jobFiles
+    const selected = new Set();   // uid set
+    const itemByUid = new Map();  // uid -> { fileIndex, fileId, fileName, pageNumber1 }
 
-    function bytesToSize(bytes){
-      const n = (bytes && bytes.byteLength) ? bytes.byteLength : 0;
-      if (n < 1024) return `${n} B`;
-      if (n < 1024*1024) return `${(n/1024).toFixed(1)} KB`;
-      return `${(n/(1024*1024)).toFixed(1)} MB`;
+    function uidOf(fileId, pageNumber1){
+      return `u_${fileId}_${pageNumber1}`;
     }
 
-    // ===== File cards rendering =====
-    function renderFiles(){
-      fileGrid.innerHTML = "";
+    function updateHeaderInfo(){
+        const totalItems = itemByUid.size;
+        const sel = selected.size;
 
-      const files = (job && job.files) ? job.files : [];
-      if (files.length === 0){
-        setSummary("파일이 없습니다. 위에서 파일을 추가하세요.");
-        mergeBtn.disabled = true;
-        return;
+        setMeta(`파일 ${jobFiles.length}개 | 페이지 ${totalItems}개 | 선택 ${sel}개`);
+
+        // ✅ 선택 0 → 비활성화 / 선택 ≥1 → 활성화
+        $("#mergeBtn").disabled = (sel === 0);
+    }
+
+    function toggleSelect(uid, on){
+      if (on) selected.add(uid);
+      else selected.delete(uid);
+      const card = pagesEl.querySelector(`.pageCard[data-uid="${uid}"]`);
+      if (card) card.classList.toggle("selected", selected.has(uid));
+      updateHeaderInfo();
+    }
+
+    function deleteByUids(uids){
+      const delSet = new Set(uids);
+      for (const uid of delSet){
+        // UI 제거
+        const card = pagesEl.querySelector(`.pageCard[data-uid="${uid}"]`);
+        if (card) card.remove();
+        // 상태 제거
+        itemByUid.delete(uid);
+        selected.delete(uid);
       }
+      updateHeaderInfo();
+    }
 
-      mergeBtn.disabled = files.length < 2; // 병합은 최소 2개 권장. 1개일 때도 허용하려면 이 줄 제거.
-      setSummary(`현재 파일 ${files.length}개 · 드래그로 순서 변경 가능`);
+    async function renderThumb(pdfDoc, pageNumber1, canvas, scale=0.35){
+      const page = await pdfDoc.getPage(pageNumber1);
+      const viewport = page.getViewport({ scale });
+      const ctx = canvas.getContext("2d", { alpha:false });
+      canvas.width = Math.floor(viewport.width);
+      canvas.height = Math.floor(viewport.height);
+      await page.render({ canvasContext: ctx, viewport }).promise;
+    }
 
-      // Cards
-      files.forEach((f, idx) => {
-        const card = document.createElement("div");
-        card.className = "fileCard";
-        card.draggable = true;
-        card.dataset.fileId = f.id;
+    function createPageCard({ uid, fileName, pageNumber1 }){
+      const card = document.createElement("div");
+      card.className = "pageCard";
+      card.dataset.uid = uid;
+      card.draggable = true;
 
-        const top = document.createElement("div");
-        top.className = "fileTop";
+      const top = document.createElement("div");
+      top.className = "pageTop";
 
-        const left = document.createElement("div");
-        const name = document.createElement("div");
-        name.className = "fileName";
-        name.textContent = f.name;
-        const sub = document.createElement("div");
-        sub.className = "fileSub";
-        sub.textContent = `${bytesToSize(f.bytes)} · #${idx+1}`;
-        left.appendChild(name);
-        left.appendChild(sub);
+      const info = document.createElement("div");
+      info.className = "info";
+      const name = document.createElement("div");
+      name.className = "name";
+      name.textContent = fileName;
+      const num = document.createElement("div");
+      num.className = "num";
+      num.textContent = "p." + pageNumber1;
+      info.appendChild(name);
+      info.appendChild(num);
 
-        const del = document.createElement("button");
-        del.className = "xBtn";
-        del.type = "button";
-        del.textContent = "삭제";
-        del.addEventListener("click", async (e) => {
-          e.stopPropagation();
-          job.files = job.files.filter(x => x.id !== f.id);
-          await putJob(job);
-          renderFiles();
-          setStatus("파일을 삭제했습니다.");
-        });
+      const actions = document.createElement("div");
+      actions.className = "actions";
 
-        top.appendChild(left);
-        top.appendChild(del);
-        card.appendChild(top);
+      const chk = document.createElement("label");
+      chk.className = "chk";
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = false;
+      const span = document.createElement("span");
+      span.textContent = "선택";
+      chk.appendChild(cb);
+      chk.appendChild(span);
 
-        fileGrid.appendChild(card);
+      const del = document.createElement("button");
+      del.className = "delBtn";
+      del.type = "button";
+      del.textContent = "삭제";
+
+      actions.appendChild(chk);
+      actions.appendChild(del);
+
+      top.appendChild(info);
+      top.appendChild(actions);
+
+      const canvasWrap = document.createElement("div");
+      canvasWrap.className = "canvasWrap";
+      const canvas = document.createElement("canvas");
+      canvasWrap.appendChild(canvas);
+
+      card.appendChild(top);
+      card.appendChild(canvasWrap);
+
+      // 클릭 UX: 카드 클릭 = 체크 토글(체크박스/삭제 버튼 클릭은 제외)
+      card.addEventListener("click", (e) => {
+        if (e.target === cb || e.target === del) return;
+        cb.checked = !cb.checked;
+        toggleSelect(uid, cb.checked);
+      });
+      cb.addEventListener("change", () => toggleSelect(uid, cb.checked));
+
+      del.addEventListener("click", (e) => {
+        e.stopPropagation();
+        deleteByUids([uid]);
+        setStatus("페이지를 삭제했습니다.");
       });
 
-      // Add tile (Smallpdf 느낌의 +)
-      const add = document.createElement("div");
-      add.className = "addTile";
-      add.role = "button";
-      add.tabIndex = 0;
-      add.innerHTML = `
-        <div class="addPlus">+</div>
-        <div class="addText">파일 추가</div>
-        <div class="addHint">클릭하거나 위 드롭존에 놓으세요</div>
-      `;
-      add.addEventListener("click", () => $("#fileInput").click());
-      add.addEventListener("keydown", (e) => { if (e.key==="Enter" || e.key===" ") $("#fileInput").click(); });
-      fileGrid.appendChild(add);
-
-      enableFileDnD(fileGrid);
+      return { card, canvas };
     }
 
-    // ===== Drag reorder for file cards (updates job.files order) =====
-    function enableFileDnD(container){
+    // ===== Drag & Drop reorder (DOM order) =====
+    function enableDnD(container){
       let draggingEl = null;
 
       const getAfterElement = (y) => {
-        const els = [...container.querySelectorAll(".fileCard:not(.dragging)")];
+        const els = [...container.querySelectorAll(".pageCard:not(.dragging)")];
         let closest = { offset: Number.NEGATIVE_INFINITY, el: null };
         for (const child of els){
           const box = child.getBoundingClientRect();
@@ -361,31 +401,18 @@
       };
 
       container.addEventListener("dragstart", (e) => {
-        const card = e.target.closest(".fileCard");
+        const card = e.target.closest(".pageCard");
         if (!card) return;
         draggingEl = card;
         card.classList.add("dragging");
         e.dataTransfer.effectAllowed = "move";
-        e.dataTransfer.setData("text/plain", card.dataset.fileId || "");
-      }, { passive: true });
+        e.dataTransfer.setData("text/plain", card.dataset.uid || "");
+      });
 
-      container.addEventListener("dragend", async () => {
+      container.addEventListener("dragend", () => {
         if (draggingEl) draggingEl.classList.remove("dragging");
         draggingEl = null;
         container.querySelectorAll(".dropTarget").forEach(x => x.classList.remove("dropTarget"));
-
-        // Persist new order to IndexedDB
-        const orderedIds = Array.from(container.querySelectorAll(".fileCard"))
-          .map(el => el.dataset.fileId)
-          .filter(Boolean);
-
-        // rebuild job.files in that order
-        const map = new Map(job.files.map(f => [f.id, f]));
-        job.files = orderedIds.map(id => map.get(id)).filter(Boolean);
-
-        await putJob(job);
-        renderFiles();
-        setStatus("파일 순서를 저장했습니다.");
       });
 
       container.addEventListener("dragover", (e) => {
@@ -397,7 +424,7 @@
         container.querySelectorAll(".dropTarget").forEach(x => x.classList.remove("dropTarget"));
         if (after) after.classList.add("dropTarget");
 
-        if (after == null) container.insertBefore(dragging, container.lastElementChild); // addTile 앞까지만
+        if (after == null) container.appendChild(dragging);
         else container.insertBefore(dragging, after);
       });
 
@@ -407,23 +434,104 @@
       });
     }
 
-    // ===== Merge and download (file-level merge in current order) =====
-    async function mergeAndDownload(){
-      const files = job.files || [];
-      if (files.length < 2){
-        setStatus("병합은 최소 2개 파일이 필요합니다. 파일을 추가하세요.");
+    // ===== Load job + render pages =====
+    async function loadAndRender(){
+      setStatus("작업 로딩 중...");
+      pagesEl.innerHTML = "";
+      selected.clear();
+      itemByUid.clear();
+      jobFiles = [];
+      pdfDocs = [];
+
+      job = await ensureJob(jobId);
+      jobFiles = job.files || [];
+      if (jobFiles.length === 0){
+        setStatus("파일이 없습니다. 위에서 파일을 추가하세요.");
+        updateHeaderInfo();
         return;
       }
+
+      // Load pdf.js docs
+      for (let i=0; i<jobFiles.length; i++){
+        // pdf.js에 넘길 때는 반드시 복사본 사용(Worker transfer로 원본 detach 방지)
+        const safeBytes = jobFiles[i].bytes.slice(0);
+        const doc = await pdfjsLib.getDocument({ data: new Uint8Array(safeBytes) }).promise;
+        pdfDocs.push(doc);
+      }
+
+      // Render all pages (append in file order)
+      enableDnD(pagesEl);
+
+      const totalPages = pdfDocs.reduce((a, d) => a + d.numPages, 0);
+      setStatus(`미리보기 생성 중... (0/${totalPages})`);
+
+      let done = 0;
+      for (let fileIndex=0; fileIndex<pdfDocs.length; fileIndex++){
+        const doc = pdfDocs[fileIndex];
+        const file = jobFiles[fileIndex];
+
+        for (let p1=1; p1<=doc.numPages; p1++){
+          const uid = uidOf(file.id, p1);
+          itemByUid.set(uid, { fileIndex, fileId: file.id, fileName: file.name, pageNumber1: p1 });
+
+          const { card, canvas } = createPageCard({ uid, fileName: file.name, pageNumber1: p1 });
+          pagesEl.appendChild(card);
+
+          await renderThumb(doc, p1, canvas, 0.35);
+
+          done++;
+          if (done % 12 === 0) setStatus(`미리보기 생성 중... (${done}/${totalPages})`);
+        }
+      }
+
+      setStatus("완료. 순서 변경/삭제 후 병합 다운로드를 누르세요.");
+      updateHeaderInfo();
+    }
+
+    // ===== Merge (current DOM order, excluding deleted items) =====
+    async function mergeAndDownload(){
+        
+      const allOrderedUids = Array.from(pagesEl.querySelectorAll(".pageCard"))
+        .map(el => el.dataset.uid)
+        .filter(Boolean);
+
+      // 선택된 페이지가 있으면: 선택된 것만 병합 (순서는 화면 순서 유지)
+      const orderedUids = (selected.size > 0)
+      ? allOrderedUids.filter(uid => selected.has(uid))
+      : allOrderedUids; // 선택 없으면 전체 병합 (원하면 여기서 막도록 변경 가능)
+
+
+      if (selected.size === 0){
+        setStatus("병합할 페이지를 선택하세요.");
+        return;
+      }
+      if (orderedUids.length === 0){
+        setStatus("병합할 페이지가 없습니다.");
+        return;
+      }
+
 
       setStatus("병합 중...");
       const outPdf = await PDFLib.PDFDocument.create();
 
-      for (let i=0; i<files.length; i++){
-        const src = await PDFLib.PDFDocument.load(files[i].bytes);
-        const pageIndices = src.getPageIndices();
-        const copied = await outPdf.copyPages(src, pageIndices);
-        copied.forEach(p => outPdf.addPage(p));
-        if ((i+1) % 2 === 0) setStatus(`병합 중... (${i+1}/${files.length})`);
+      // cache pdf-lib docs per fileIndex
+      const pdfLibDocs = new Map();
+
+      for (let i=0; i<orderedUids.length; i++){
+        const uid = orderedUids[i];
+        const item = itemByUid.get(uid);
+        if (!item) continue;
+
+        if (!pdfLibDocs.has(item.fileIndex)){
+          const safeBytes = jobFiles[item.fileIndex].bytes.slice(0);
+          const src = await PDFLib.PDFDocument.load(safeBytes);
+          pdfLibDocs.set(item.fileIndex, src);
+        }
+        const srcDoc = pdfLibDocs.get(item.fileIndex);
+        const [copied] = await outPdf.copyPages(srcDoc, [item.pageNumber1 - 1]);
+        outPdf.addPage(copied);
+
+        if ((i+1) % 25 === 0) setStatus(`병합 중... (${i+1}/${orderedUids.length})`);
       }
 
       const outBytes = await outPdf.save();
@@ -432,40 +540,31 @@
 
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); a.remove();
       URL.revokeObjectURL(url);
 
       setStatus(`완료: ${filename}`);
     }
 
-    // ===== Load =====
-    async function loadJob(){
-      setStatus("작업 로딩 중...");
-      job = await getJob(jobId);
-      if (!job){
-        setStatus("작업(jobId)을 찾을 수 없습니다. 처음으로 이동합니다.");
-        location.href = "index.html";
-        return;
-      }
-      setMeta(`jobId=${jobId}`);
-      setStatus("");
-      renderFiles();
-    }
+    // ===== Events =====
+    $("#backHome").addEventListener("click", () => location.href = "index.html");
+    $("#reloadBtn").addEventListener("click", loadAndRender);
 
-    // ===== Add files: button + dropzone =====
-    $("#pickBtn").addEventListener("click", () => $("#fileInput").click());
-    $("#fileInput").addEventListener("change", async () => {
-      const files = $("#fileInput").files;
-      if (!files || files.length === 0) return;
-      setStatus("파일 추가 저장 중(IndexedDB)...");
-      job = await addFilesToJob(jobId, files);
-      $("#fileInput").value = "";
-      renderFiles();
-      setStatus("파일을 추가했습니다.");
+    $("#addFilesBtn").addEventListener("click", () => $("#addFilesInput").click());
+    $("#addFilesInput").addEventListener("change", async () => {
+    try{
+        const files = $("#addFilesInput").files;
+        if (!files || files.length === 0) return;
+        setStatus("파일 추가 저장 중(IndexedDB)...");
+        await addFilesToJob(jobId, files);
+        $("#addFilesInput").value = "";
+        await loadAndRender();
+        setStatus("파일을 추가했습니다.");
+        } catch(e){
+            console.error(e);
+            setStatus("파일 추가 실패: " + (e?.message || e));
+        }
     });
 
     const dz = $("#dropzone");
@@ -477,22 +576,53 @@
       const files = e.dataTransfer.files;
       if (!files || files.length === 0) return;
       setStatus("파일 추가 저장 중(IndexedDB)...");
-      job = await addFilesToJob(jobId, files);
-      renderFiles();
+      await addFilesToJob(jobId, files);
+      await loadAndRender();
       setStatus("파일을 추가했습니다.");
     });
-    dz.addEventListener("click", () => $("#fileInput").click());
-    dz.addEventListener("keydown", (e) => { if (e.key==="Enter" || e.key===" ") $("#fileInput").click(); });
-
-    // ===== Controls =====
-    $("#backHome").addEventListener("click", () => location.href = "index.html");
-    $("#reloadBtn").addEventListener("click", loadJob);
+    dz.addEventListener("click", () => $("#addFilesInput").click());
+    dz.addEventListener("keydown", (e) => { if (e.key==="Enter" || e.key===" ") $("#addFilesInput").click(); });
 
     $("#clearJobBtn").addEventListener("click", async () => {
       await clearJob(jobId);
-      job = { jobId, createdAt: Date.now(), files: [] };
+      pagesEl.innerHTML = "";
+      selected.clear();
+      itemByUid.clear();
+      jobFiles = [];
+      pdfDocs = [];
       setStatus("이 작업(jobId)을 비웠습니다. 파일을 다시 추가하세요.");
-      renderFiles();
+      updateHeaderInfo();
+    });
+
+    $("#selectAll").addEventListener("click", () => {
+      for (const el of pagesEl.querySelectorAll(".pageCard")){
+        const uid = el.dataset.uid;
+        if (!uid) continue;
+        selected.add(uid);
+        el.classList.add("selected");
+        const cb = el.querySelector('input[type="checkbox"]');
+        if (cb) cb.checked = true;
+      }
+      updateHeaderInfo();
+    });
+
+    $("#selectNone").addEventListener("click", () => {
+      selected.clear();
+      for (const el of pagesEl.querySelectorAll(".pageCard")){
+        el.classList.remove("selected");
+        const cb = el.querySelector('input[type="checkbox"]');
+        if (cb) cb.checked = false;
+      }
+      updateHeaderInfo();
+    });
+
+    $("#deleteSelected").addEventListener("click", () => {
+      if (selected.size === 0){
+        setStatus("선택된 페이지가 없습니다.");
+        return;
+      }
+      deleteByUids(Array.from(selected));
+      setStatus("선택한 페이지를 삭제했습니다.");
     });
 
     $("#mergeBtn").addEventListener("click", async () => {
@@ -508,7 +638,7 @@
     });
 
     // init
-    loadJob();
+    loadAndRender();
   </script>
 </body>
 </html>
